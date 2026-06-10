@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# upNext
 
-## Getting Started
+Realtime nightlife and DJ request platform — production MVP foundation.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, Turbopack)
+- **TypeScript** (strict)
+- **Tailwind CSS v4** + **shadcn/ui**
+- **Supabase** (Auth, Postgres, Realtime)
+- **TanStack Query** · **Zod** · **react-hook-form**
+- **Vercel** deployment
+
+## Quick start
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Environment
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in your Supabase project values from [Supabase Dashboard](https://supabase.com/dashboard) → Project Settings → API.
+
+### 3. Run dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command                | Description             |
+| ---------------------- | ----------------------- |
+| `npm run dev`          | Dev server (Turbopack)  |
+| `npm run build`        | Production build        |
+| `npm run start`        | Start production server |
+| `npm run lint`         | ESLint                  |
+| `npm run lint:fix`     | ESLint with auto-fix    |
+| `npm run format`       | Prettier write          |
+| `npm run format:check` | Prettier check          |
+| `npm run typecheck`    | TypeScript check        |
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for conventions and data-flow rules.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment (Vercel)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push to GitHub and import the repo in Vercel.
+2. Set environment variables from `.env.example` in the Vercel project settings.
+3. Deploy — Next.js is detected automatically.
 
-## Deploy on Vercel
+## Git hooks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Husky runs on pre-commit:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Prettier formatting (with Tailwind class sorting)
+- ESLint on staged TypeScript/JavaScript files
+
+## Optional integrations
+
+Placeholders in `src/lib/integrations/` for Sentry and PostHog. See comments in those files when enabling.
