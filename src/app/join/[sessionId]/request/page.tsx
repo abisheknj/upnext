@@ -35,17 +35,21 @@ export default async function RequestPage({ params }: RequestPageProps) {
     notFound();
   }
 
+  const isLive = session.status === "live";
+
   return (
     <JoinShell title={session.title} description={session.description}>
       <Card>
         <CardHeader>
           <CardTitle>Request a song</CardTitle>
           <CardDescription>
-            Search the catalog, pick a track, and send it to the DJ.
+            {isLive
+              ? "Search the catalog, pick a track, and send it to the DJ."
+              : "Session is not accepting requests."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SongRequestForm sessionId={sessionId} />
+          <SongRequestForm sessionId={sessionId} isLive={isLive} />
         </CardContent>
       </Card>
     </JoinShell>

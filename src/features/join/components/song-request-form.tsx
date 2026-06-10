@@ -19,9 +19,10 @@ const initialState: SongRequestActionState = {};
 
 type SongRequestFormProps = {
   sessionId: string;
+  isLive: boolean;
 };
 
-export function SongRequestForm({ sessionId }: SongRequestFormProps) {
+export function SongRequestForm({ sessionId, isLive }: SongRequestFormProps) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     submitSongRequestAction,
@@ -57,6 +58,16 @@ export function SongRequestForm({ sessionId }: SongRequestFormProps) {
     );
   }
 
+  if (!isLive) {
+    return (
+      <p className="text-muted-foreground text-sm" role="status">
+        Session is not accepting requests.
+      </p>
+    );
+  }
+
+  const disabled = isPending || !isLive;
+
   return (
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="sessionId" value={sessionId} />
@@ -72,7 +83,7 @@ export function SongRequestForm({ sessionId }: SongRequestFormProps) {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by title or artist"
-          disabled={isPending}
+          disabled={disabled}
         />
       </div>
 
@@ -80,7 +91,9 @@ export function SongRequestForm({ sessionId }: SongRequestFormProps) {
         <Label>Select a song</Label>
         <div className="flex flex-col gap-2">
           {filteredSongs.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No songs match your search.</p>
+            <p className="text-muted-foreground text-sm">
+              No songs match your search.
+            </p>
           ) : (
             filteredSongs.map((song) => {
               const isSelected = selectedSongId === song.id;
@@ -90,7 +103,7 @@ export function SongRequestForm({ sessionId }: SongRequestFormProps) {
                   key={song.id}
                   type="button"
                   onClick={() => setSelectedSongId(song.id)}
-                  disabled={isPending}
+                  disabled={disabled}
                   className={`border-border ring-foreground/10 rounded-lg border px-4 py-3 text-left ring-1 transition-colors ${
                     isSelected
                       ? "border-primary bg-primary/10"
@@ -114,14 +127,18 @@ export function SongRequestForm({ sessionId }: SongRequestFormProps) {
           name="message"
           rows={3}
           placeholder="Shout-out or dedication…"
-          disabled={isPending}
+          disabled={disabled}
           className="border-input bg-background ring-foreground/10 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 w-full rounded-lg border px-3 py-2 text-sm ring-1 outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50"
           aria-invalid={!!state?.fieldErrors?.message}
         />
         <FieldError messages={state?.fieldErrors?.message} />
       </div>
 
-      <Button type="submit" disabled={isPending || !selectedSongId} className="w-full">
+      <Button
+        type="submit"
+        disabled={disabled || !selectedSongId}
+        className="w-full"
+      >
         {isPending ? "Submitting…" : "Request song"}
       </Button>
     </form>

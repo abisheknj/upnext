@@ -10,13 +10,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DashboardShell } from "@/features/sessions/components/dashboard-shell";
-import { SessionRequestsTable } from "@/features/sessions/components/session-requests-table";
+import { SessionControls } from "@/features/sessions/components/session-controls";
+import { SessionRequestsSections } from "@/features/sessions/components/session-requests-table";
 import { getProfile, requireAuth } from "@/lib/auth";
 import { listSongRequestsBySession } from "@/services/requests";
 import { getSessionById } from "@/services/sessions";
 
 type SessionDetailPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ notice?: string }>;
 };
 
 export async function generateMetadata({
@@ -32,6 +34,7 @@ export async function generateMetadata({
 
 export default async function SessionDetailPage({
   params,
+  searchParams,
 }: SessionDetailPageProps) {
   await requireAuth();
   const profile = await getProfile();
@@ -41,6 +44,7 @@ export default async function SessionDetailPage({
   }
 
   const { id } = await params;
+  const { notice } = await searchParams;
   const session = await getSessionById(id);
 
   if (!session || session.created_by !== profile.id) {
@@ -53,6 +57,15 @@ export default async function SessionDetailPage({
   return (
     <DashboardShell title={session.title} showBack>
       <div className="grid gap-6">
+        {notice === "already_have_session" ? (
+          <p
+            className="border-border bg-muted/50 text-foreground rounded-lg border px-4 py-3 text-sm"
+            role="status"
+          >
+            You already have a session.
+          </p>
+        ) : null}
+
         <Card>
           <CardHeader className="flex-row items-start justify-between gap-4">
             <div className="space-y-1">
@@ -77,13 +90,15 @@ export default async function SessionDetailPage({
               </div>
             </dl>
             <p className="text-muted-foreground text-sm">
-              Share this link with your audience so they can join and request
-              songs.
+              {session.status === "live"
+                ? "Share this link with your audience so they can join and request songs."
+                : "Start the session to begin accepting song requests."}
             </p>
+            <SessionControls session={session} />
           </CardContent>
         </Card>
 
-        <SessionRequestsTable requests={requests} />
+        <SessionRequestsSections requests={requests} sessionId={id} />
       </div>
     </DashboardShell>
   );

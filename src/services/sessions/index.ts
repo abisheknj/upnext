@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { Session } from "@/lib/types/database";
+import type { Session, SessionStatus } from "@/lib/types/database";
 
 export type CreateSessionInput = {
   title: string;
@@ -18,7 +18,7 @@ export async function createSession(
     .insert({
       title: input.title,
       description: input.description ?? null,
-      status: "live",
+      status: "draft",
       created_by: input.createdBy,
     })
     .select()
@@ -47,6 +47,24 @@ export async function getSessionById(id: string): Promise<Session | null> {
   return data as Session | null;
 }
 
+export async function getSessionByDj(djUserId: string): Promise<Session | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select()
+    .eq("created_by", djUserId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Session | null;
+}
+
 export async function listSessionsByDj(djUserId: string): Promise<Session[]> {
   const supabase = await createClient();
 
@@ -61,4 +79,58 @@ export async function listSessionsByDj(djUserId: string): Promise<Session[]> {
   }
 
   return (data ?? []) as Session[];
+}
+
+export async function updateSessionStatus(
+  sessionId: string,
+  status: SessionStatus,
+  extra?: { ends_at?: string },
+): Promise<Session> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .update({
+      status,
+      ...extra,
+    })
+    .eq("id", sessionId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Session;
+}
+
+export async function startSession(sessionId: string): Promise<Session> {
+  const session = await getSessionById(sessionId);
+
+  if (!session) {
+    throw new Error("Session not found.");
+  }
+
+  if (session.status !== "draft") {
+    throw new Error("Only draft sessions can be started.");
+  }
+
+  return updateSessionStatus(sessionId, "live");
+}
+
+export async function endSession(sessionId: string): Promise<Session> {
+  const session = await getSessionById(sessionId);
+
+  if (!session) {
+    throw new Error("Session not found.");
+  }
+
+  if (session.status !== "live") {
+    throw new Error("Only live sessions can be ended.");
+  }
+
+  return updateSessionStatus(sessionId, "ended", {
+    ends_at: new Date().toISOString(),
+  });
 }
