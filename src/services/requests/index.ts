@@ -17,6 +17,7 @@ export type CreateSongRequestInput = {
   songTitle: string;
   artistName: string;
   spotifyTrackId: string;
+  artworkUrl?: string | null;
   message?: string | null;
 };
 
@@ -105,6 +106,7 @@ export async function createSongRequest(
       song_title: input.songTitle,
       artist_name: input.artistName,
       spotify_track_id: input.spotifyTrackId,
+      artwork_url: input.artworkUrl ?? null,
       message: input.message ?? null,
       status: "submitted",
     })
@@ -153,7 +155,7 @@ export async function getRequestById(
   requestId: string,
   sessionId: string,
 ): Promise<SongRequest | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("song_requests")

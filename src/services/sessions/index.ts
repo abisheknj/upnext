@@ -47,13 +47,36 @@ export async function getSessionById(id: string): Promise<Session | null> {
   return data as Session | null;
 }
 
-export async function getSessionByDj(djUserId: string): Promise<Session | null> {
+export async function getSessionByDj(
+  djUserId: string,
+): Promise<Session | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("sessions")
     .select()
     .eq("created_by", djUserId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Session | null;
+}
+
+export async function getActiveSessionByDj(
+  djUserId: string,
+): Promise<Session | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select()
+    .eq("created_by", djUserId)
+    .in("status", ["draft", "live"])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();

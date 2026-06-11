@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { MOCK_SONGS } from "./data/mock-songs";
-
-const mockSongIds = MOCK_SONGS.map((song) => song.id) as [string, ...string[]];
-
 export const joinSessionSchema = z.object({
   sessionId: z.uuid("Invalid session"),
 });
@@ -11,7 +7,14 @@ export const joinSessionSchema = z.object({
 export const songRequestSchema = z.object({
   sessionId: z.uuid("Invalid session"),
   participantId: z.uuid("Invalid participant"),
-  songId: z.enum(mockSongIds, { message: "Select a valid song" }),
+  songId: z.string().trim().min(1, "Select a valid song").max(128),
+  songTitle: z.string().trim().min(1, "Select a valid song").max(300),
+  artistName: z.string().trim().min(1, "Select a valid song").max(300),
+  artworkUrl: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined),
   message: z
     .string()
     .trim()
@@ -60,6 +63,9 @@ export function parseSongRequestFormData(
     sessionId: formData.get("sessionId"),
     participantId: formData.get("participantId"),
     songId: formData.get("songId"),
+    songTitle: formData.get("songTitle"),
+    artistName: formData.get("artistName"),
+    artworkUrl: formData.get("artworkUrl") ?? undefined,
     message: formData.get("message") ?? undefined,
   });
 

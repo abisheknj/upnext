@@ -6,7 +6,6 @@ import { createParticipant } from "@/services/participants";
 import { createSongRequest } from "@/services/requests";
 import { getSessionById } from "@/services/sessions";
 
-import { MOCK_SONGS } from "./data/mock-songs";
 import {
   type JoinActionState,
   type SongRequestActionState,
@@ -50,25 +49,31 @@ export async function submitSongRequestAction(
     return parsed.state;
   }
 
-  const { sessionId, participantId, songId, message } = parsed.data;
+  const {
+    sessionId,
+    participantId,
+    songId,
+    songTitle,
+    artistName,
+    artworkUrl,
+    message,
+  } = parsed.data;
 
   const session = await getSessionById(sessionId);
   if (!session) {
     return { error: "Session not found." };
   }
 
-  const song = MOCK_SONGS.find((item) => item.id === songId);
-  if (!song) {
-    return { error: "Selected song is not available." };
-  }
+  let request;
 
   try {
-    await createSongRequest({
+    request = await createSongRequest({
       sessionId,
       participantId,
-      songTitle: song.title,
-      artistName: song.artist,
-      spotifyTrackId: song.id,
+      songTitle,
+      artistName,
+      spotifyTrackId: songId,
+      artworkUrl: artworkUrl ?? null,
       message: message ?? null,
     });
   } catch (error) {
@@ -78,8 +83,9 @@ export async function submitSongRequestAction(
   }
 
   const params = new URLSearchParams({
-    song: song.title,
-    artist: song.artist,
+    song: songTitle,
+    artist: artistName,
+    requestId: request.id,
   });
 
   redirect(`/join/${sessionId}/success?${params.toString()}`);

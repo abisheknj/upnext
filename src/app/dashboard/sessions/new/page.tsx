@@ -11,7 +11,7 @@ import {
 import { CreateSessionForm } from "@/features/sessions/components/create-session-form";
 import { DashboardShell } from "@/features/sessions/components/dashboard-shell";
 import { getProfile, requireAuth } from "@/lib/auth";
-import { getSessionByDj } from "@/services/sessions";
+import { getActiveSessionByDj } from "@/services/sessions";
 
 export const metadata: Metadata = {
   title: "Create session",
@@ -22,7 +22,7 @@ export default async function NewSessionPage() {
   const profile = await getProfile();
 
   if (profile) {
-    const existing = await getSessionByDj(profile.id);
+    const existing = await getActiveSessionByDj(profile.id);
     if (existing) {
       redirect(
         `/dashboard/sessions/${existing.id}?notice=already_have_session`,

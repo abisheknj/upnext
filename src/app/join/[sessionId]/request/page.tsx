@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AudienceRequestStatusList } from "@/features/join/components/audience-request-status-list";
 import { JoinShell } from "@/features/join/components/join-shell";
 import { SongRequestForm } from "@/features/join/components/song-request-form";
 import { getSessionById } from "@/services/sessions";
@@ -48,8 +49,9 @@ export default async function RequestPage({ params }: RequestPageProps) {
               : "Session is not accepting requests."}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <SongRequestForm sessionId={sessionId} isLive={isLive} />
+          <AudienceRequestStatusList sessionId={sessionId} />
         </CardContent>
       </Card>
     </JoinShell>

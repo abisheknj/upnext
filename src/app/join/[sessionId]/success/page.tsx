@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -11,12 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AudienceRequestStatusList } from "@/features/join/components/audience-request-status-list";
 import { JoinShell } from "@/features/join/components/join-shell";
+import { cn } from "@/lib/utils";
+import { getRequestById } from "@/services/requests";
 import { getSessionById } from "@/services/sessions";
 
 type SuccessPageProps = {
   params: Promise<{ sessionId: string }>;
-  searchParams: Promise<{ song?: string; artist?: string }>;
+  searchParams: Promise<{ song?: string; artist?: string; requestId?: string }>;
 };
 
 export const metadata: Metadata = {
@@ -28,12 +30,14 @@ export default async function SuccessPage({
   searchParams,
 }: SuccessPageProps) {
   const { sessionId } = await params;
-  const { song, artist } = await searchParams;
+  const { song, artist, requestId } = await searchParams;
   const session = await getSessionById(sessionId);
 
   if (!session) {
     notFound();
   }
+
+  const request = requestId ? await getRequestById(requestId, sessionId) : null;
 
   return (
     <JoinShell title={session.title} description={session.description}>
@@ -54,6 +58,12 @@ export default async function SuccessPage({
               ) : null}
             </div>
           ) : null}
+
+          <AudienceRequestStatusList
+            sessionId={sessionId}
+            initialRequests={request ? [request] : []}
+            participantId={request?.participant_id}
+          />
 
           <Link
             href={`/join/${sessionId}/request`}

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { DashboardShell } from "@/features/sessions/components/dashboard-shell";
 import { getProfile, requireAuth } from "@/lib/auth";
-import { getSessionByDj } from "@/services/sessions";
+import { getActiveSessionByDj } from "@/services/sessions";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -27,11 +27,11 @@ export default async function DashboardPage() {
     notFound();
   }
 
-  const session = await getSessionByDj(profile.id);
+  const session = await getActiveSessionByDj(profile.id);
 
-  if (session) {
-    redirect(`/dashboard/sessions/${session.id}`);
-  }
+  // if (session) {
+  //   redirect(`/dashboard/sessions/${session.id}`);
+  // }
 
   return (
     <DashboardShell
@@ -49,15 +49,11 @@ export default async function DashboardPage() {
         <CardHeader>
           <CardTitle>No session yet</CardTitle>
           <CardDescription>
-            Create your session to start accepting song requests from the
-            crowd.
+            Create your session to start accepting song requests from the crowd.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Link
-            href="/dashboard/sessions/new"
-            className={cn(buttonVariants())}
-          >
+          <Link href="/dashboard/sessions/new" className={cn(buttonVariants())}>
             Create session
           </Link>
         </CardContent>

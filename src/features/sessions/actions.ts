@@ -9,7 +9,7 @@ import { getRequestById, updateRequestStatus } from "@/services/requests";
 import {
   createSession,
   endSession,
-  getSessionByDj,
+  getActiveSessionByDj,
   getSessionById,
   startSession,
 } from "@/services/sessions";
@@ -56,11 +56,9 @@ export async function createSessionAction(
     return { error: "Profile not found. Please complete signup." };
   }
 
-  const existing = await getSessionByDj(profile.id);
+  const existing = await getActiveSessionByDj(profile.id);
   if (existing) {
-    redirect(
-      `/dashboard/sessions/${existing.id}?notice=already_have_session`,
-    );
+    redirect(`/dashboard/sessions/${existing.id}?notice=already_have_session`);
   }
 
   const parsed = parseCreateSessionFormData(formData);

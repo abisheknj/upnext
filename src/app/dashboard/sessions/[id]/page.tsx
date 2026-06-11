@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { DashboardShell } from "@/features/sessions/components/dashboard-shell";
 import { SessionControls } from "@/features/sessions/components/session-controls";
-import { SessionRequestsSections } from "@/features/sessions/components/session-requests-table";
+import { SessionRequestsRealtime } from "@/features/sessions/components/session-requests-realtime";
 import { getProfile, requireAuth } from "@/lib/auth";
 import { listSongRequestsBySession } from "@/services/requests";
 import { getSessionById } from "@/services/sessions";
@@ -98,7 +98,7 @@ export default async function SessionDetailPage({
           </CardContent>
         </Card>
 
-        <SessionRequestsSections requests={requests} sessionId={id} />
+        <SessionRequestsRealtime initialRequests={requests} sessionId={id} />
       </div>
     </DashboardShell>
   );
