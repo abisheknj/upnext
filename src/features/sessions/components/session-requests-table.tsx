@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { SongRequestWithParticipant } from "@/lib/types/database";
+import type {
+  RequestStatus,
+  SongRequestWithParticipant,
+} from "@/lib/types/database";
 
 import {
   acceptRequestAction,
@@ -20,32 +23,19 @@ type SessionRequestsSectionsProps = {
 
 type MvpRequestStatus = "submitted" | "accepted" | "played" | "rejected";
 
-const SECTIONS: {
-  key: MvpRequestStatus;
-  title: string;
-  description: string;
-}[] = [
-  {
-    key: "submitted",
-    title: "New requests",
-    description: "Fresh submissions waiting for your call.",
-  },
-  {
-    key: "accepted",
-    title: "Accepted",
-    description: "Approved tracks ready for the set.",
-  },
-  {
-    key: "played",
-    title: "Played",
-    description: "Completed requests from this session.",
-  },
-  {
-    key: "rejected",
-    title: "Rejected",
-    description: "Requests that will not be played.",
-  },
+const VISIBLE_STATUSES: MvpRequestStatus[] = [
+  "submitted",
+  "accepted",
+  "played",
+  "rejected",
 ];
+
+const STATUS_PRIORITY: Record<MvpRequestStatus, number> = {
+  submitted: 0,
+  accepted: 1,
+  played: 2,
+  rejected: 3,
+};
 
 function formatTime(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -100,28 +90,63 @@ function RequestActions({
   return null;
 }
 
-function RequestSection({
-  title,
-  description,
+function isVisibleStatus(status: RequestStatus): status is MvpRequestStatus {
+  return VISIBLE_STATUSES.includes(status as MvpRequestStatus);
+}
+
+function sortSmartRequests(
+  requests: SongRequestWithParticipant[],
+): SongRequestWithParticipant[] {
+  return [...requests].sort((a, b) => {
+    if (isVisibleStatus(a.status) && isVisibleStatus(b.status)) {
+      const statusSort = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+
+      if (statusSort !== 0) {
+        return statusSort;
+      }
+    }
+
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+}
+
+function RequestsSummary({
+  requests,
+}: {
+  requests: SongRequestWithParticipant[];
+}) {
+  const submitted = requests.filter(
+    (request) => request.status === "submitted",
+  ).length;
+  const accepted = requests.filter(
+    (request) => request.status === "accepted",
+  ).length;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge variant="secondary">{requests.length} total</Badge>
+      {submitted > 0 ? <Badge variant="warning">{submitted} new</Badge> : null}
+      {accepted > 0 ? (
+        <Badge variant="success">{accepted} accepted</Badge>
+      ) : null}
+    </div>
+  );
+}
+
+function RequestList({
   requests,
   sessionId,
 }: {
-  title: string;
-  description: string;
   requests: SongRequestWithParticipant[];
   sessionId: string;
 }) {
   return (
-    <Card variant="section">
+    <Card variant="section" className="bg-white/[0.04]">
       <CardHeader className="border-b">
         <SectionHeader
-          title={title}
-          description={description}
-          action={
-            <Badge variant="secondary">
-              {requests.length} request{requests.length === 1 ? "" : "s"}
-            </Badge>
-          }
+          title="Live Requests"
+          description="One smart queue with every request, its status, and the actions available now."
+          action={<RequestsSummary requests={requests} />}
         />
       </CardHeader>
       <CardContent>
@@ -139,7 +164,7 @@ function RequestSection({
             </div>
           </div>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             {requests.map((request) => (
               <RequestCard
                 key={request.id}
@@ -162,7 +187,7 @@ function RequestCard({
   sessionId: string;
 }) {
   return (
-    <article className="group/request border-border/70 bg-background/45 hover:border-primary/35 hover:bg-background/70 hover:shadow-card grid gap-4 rounded-2xl border p-3 transition-all duration-200 ease-out sm:grid-cols-[4.5rem_1fr_auto] sm:items-center">
+    <article className="group/request border-border/70 bg-background/45 hover:border-primary/35 hover:bg-background/70 hover:shadow-card grid gap-4 rounded-2xl border p-3 transition-all duration-200 ease-out md:grid-cols-[4.5rem_minmax(0,1fr)_auto_auto] md:items-center">
       <div
         className="bg-secondary text-muted-foreground flex aspect-square size-16 items-center justify-center overflow-hidden rounded-2xl bg-cover bg-center shadow-sm sm:size-[4.5rem]"
         style={
@@ -183,7 +208,7 @@ function RequestCard({
       </div>
 
       <div className="min-w-0 space-y-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between md:block">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold tracking-tight">
               {request.song_title}
@@ -192,7 +217,6 @@ function RequestCard({
               {request.artist_name}
             </p>
           </div>
-          <StatusBadge status={request.status} />
         </div>
 
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
@@ -212,7 +236,11 @@ function RequestCard({
         </div>
       </div>
 
-      <div className="flex justify-start sm:justify-end">
+      <div className="flex items-center md:justify-center">
+        <StatusBadge status={request.status} />
+      </div>
+
+      <div className="flex justify-start md:justify-end">
         <RequestActions request={request} sessionId={sessionId} />
       </div>
     </article>
@@ -224,22 +252,13 @@ export function SessionRequestsSections({
   sessionId,
 }: SessionRequestsSectionsProps) {
   const mvpRequests = requests.filter((request) =>
-    SECTIONS.some((section) => section.key === request.status),
+    isVisibleStatus(request.status),
   );
 
   return (
-    <div className="grid gap-6">
-      {SECTIONS.map((section) => (
-        <RequestSection
-          key={section.key}
-          title={section.title}
-          description={section.description}
-          sessionId={sessionId}
-          requests={mvpRequests.filter(
-            (request) => request.status === section.key,
-          )}
-        />
-      ))}
-    </div>
+    <RequestList
+      sessionId={sessionId}
+      requests={sortSmartRequests(mvpRequests)}
+    />
   );
 }
