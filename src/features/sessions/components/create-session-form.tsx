@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/features/auth/components/field-error";
 import { FormMessage } from "@/features/auth/components/form-message";
 
@@ -38,19 +39,18 @@ export function CreateSessionForm() {
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="description">Description (optional)</Label>
-        <textarea
+        <Textarea
           id="description"
           name="description"
           rows={3}
           placeholder="Tell the crowd what kind of night this is…"
           disabled={isPending}
-          className="border-input bg-background ring-foreground/10 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 w-full rounded-lg border px-3 py-2 text-sm ring-1 outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50"
           aria-invalid={!!state?.fieldErrors?.description}
         />
         <FieldError messages={state?.fieldErrors?.description} />
       </div>
 
-      <Button type="submit" disabled={isPending}>
+      <Button type="submit" size="lg" disabled={isPending}>
         {isPending ? "Creating…" : "Create session"}
       </Button>
     </form>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { CalendarPlus } from "lucide-react";
 
 import {
   Card,
@@ -36,9 +37,12 @@ export default async function NewSessionPage() {
       description="Set up your session. It starts as a draft until you go live."
       showBack
     >
-      <Card className="max-w-lg">
+      <Card variant="elevated" className="max-w-2xl">
         <CardHeader>
-          <CardTitle>Session details</CardTitle>
+          <div className="bg-primary/15 text-primary mb-2 flex size-12 items-center justify-center rounded-2xl">
+            <CalendarPlus className="size-5" aria-hidden="true" />
+          </div>
+          <CardTitle className="text-xl">Session details</CardTitle>
           <CardDescription>
             Sessions are created as drafts. Start the session when you are ready
             to accept requests.
