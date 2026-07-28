@@ -1,17 +1,17 @@
 const STORAGE_PREFIX = "upnext_participant_";
 
-export function participantStorageKey(sessionId: string): string {
-  return `${STORAGE_PREFIX}${sessionId}`;
+export function participantStorageKey(publicJoinId: string): string {
+  return `${STORAGE_PREFIX}${publicJoinId}`;
 }
 
-export function getStoredParticipantId(sessionId: string): string | null {
+export function getStoredParticipantId(publicJoinId: string): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(participantStorageKey(sessionId));
+  return localStorage.getItem(participantStorageKey(publicJoinId));
 }
 
 export function setStoredParticipantId(
-  sessionId: string,
+  publicJoinId: string,
   participantId: string,
 ): void {
-  localStorage.setItem(participantStorageKey(sessionId), participantId);
+  localStorage.setItem(participantStorageKey(publicJoinId), participantId);
 }

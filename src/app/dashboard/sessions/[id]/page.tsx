@@ -10,11 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { BeatLinkQrCard } from "@/features/join/components/beatlink-qr-card";
 import { DashboardShell } from "@/features/sessions/components/dashboard-shell";
 import { DashboardStats } from "@/features/sessions/components/dashboard-ui";
 import { SessionControls } from "@/features/sessions/components/session-controls";
 import { SessionRequestsRealtime } from "@/features/sessions/components/session-requests-realtime";
 import { getProfile, requireAuth } from "@/lib/auth";
+import { getPublicJoinUrl } from "@/lib/public-join";
 import { listSongRequestsBySession } from "@/services/requests";
 import { getSessionById } from "@/services/sessions";
 
@@ -54,7 +56,9 @@ export default async function SessionDetailPage({
   }
 
   const requests = await listSongRequestsBySession(id);
-  const joinUrl = `/join/${session.id}`;
+  const publicJoinUrl = profile.public_join_id
+    ? await getPublicJoinUrl(profile.public_join_id)
+    : null;
   const newRequests = requests.filter(
     (request) => request.status === "submitted",
   ).length;
@@ -120,7 +124,9 @@ export default async function SessionDetailPage({
                   <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                     Public join URL
                   </p>
-                  <p className="mt-1 truncate font-mono text-xs">{joinUrl}</p>
+                  <p className="mt-1 truncate font-mono text-xs">
+                    {publicJoinUrl ?? "Run the public join ID migration"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -139,7 +145,7 @@ export default async function SessionDetailPage({
                 </p>
               </div>
             </div>
-            <SessionControls session={session} joinUrl={joinUrl} />
+            <SessionControls session={session} joinUrl={publicJoinUrl} />
           </CardContent>
         </Card>
 
@@ -149,6 +155,24 @@ export default async function SessionDetailPage({
           acceptedRequests={acceptedRequests}
           playedRequests={playedRequests}
         />
+
+        {publicJoinUrl ? (
+          <BeatLinkQrCard
+            publicJoinUrl={publicJoinUrl}
+            title="Permanent event QR"
+            description="Use this same BeatLink QR at every event. It always resolves to your currently live session."
+          />
+        ) : (
+          <Card variant="section">
+            <CardHeader>
+              <CardTitle>Permanent event QR unavailable</CardTitle>
+              <CardDescription>
+                Run the latest Supabase migration to add public join IDs before
+                sharing a permanent BeatLink QR.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
 
         <SessionRequestsRealtime initialRequests={requests} sessionId={id} />
       </div>

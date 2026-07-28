@@ -1,4 +1,4 @@
-import { QrCode, Radio, Square } from "lucide-react";
+import { Radio, Square } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/types/database";
@@ -8,7 +8,7 @@ import { CopyJoinLinkButton } from "./copy-join-link-button";
 
 type SessionControlsProps = {
   session: Session;
-  joinUrl: string;
+  joinUrl?: string | null;
 };
 
 export function SessionControls({ session, joinUrl }: SessionControlsProps) {
@@ -38,17 +38,7 @@ export function SessionControls({ session, joinUrl }: SessionControlsProps) {
         </form>
       ) : null}
 
-      <CopyJoinLinkButton joinUrl={joinUrl} />
-
-      <Button
-        type="button"
-        variant="outline"
-        aria-label="Generate QR code placeholder"
-        disabled
-      >
-        <QrCode className="size-4" aria-hidden="true" />
-        Generate QR
-      </Button>
+      {joinUrl ? <CopyJoinLinkButton joinUrl={joinUrl} /> : null}
     </div>
   );
 }

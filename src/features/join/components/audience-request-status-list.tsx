@@ -13,7 +13,7 @@ import type { RequestStatus, SongRequest } from "@/lib/types/database";
 import { getStoredParticipantId } from "../lib/participant-storage";
 
 type AudienceRequestStatusListProps = {
-  sessionId: string;
+  publicJoinId: string;
   initialRequests?: SongRequest[];
   participantId?: string;
 };
@@ -77,12 +77,12 @@ function upsertRequest(requests: SongRequest[], request: SongRequest) {
 }
 
 export function AudienceRequestStatusList({
-  sessionId,
+  publicJoinId,
   initialRequests = [],
   participantId: initialParticipantId,
 }: AudienceRequestStatusListProps) {
   const [participantId] = useState<string | null>(
-    () => initialParticipantId ?? getStoredParticipantId(sessionId),
+    () => initialParticipantId ?? getStoredParticipantId(publicJoinId),
   );
   const [requests, setRequests] = useState<SongRequest[]>(
     sortRequests(initialRequests),
@@ -103,7 +103,6 @@ export function AudienceRequestStatusList({
       const { data, error } = await supabase
         .from("song_requests")
         .select()
-        .eq("session_id", sessionId)
         .eq("participant_id", participantId)
         .order("created_at", { ascending: false });
 
@@ -128,10 +127,6 @@ export function AudienceRequestStatusList({
           filter: `participant_id=eq.${participantId}`,
         },
         (payload: RealtimePostgresInsertPayload<SongRequest>) => {
-          if (payload.new.session_id !== sessionId) {
-            return;
-          }
-
           setRequests((current) => upsertRequest(current, payload.new));
         },
       )
@@ -144,10 +139,6 @@ export function AudienceRequestStatusList({
           filter: `participant_id=eq.${participantId}`,
         },
         (payload: RealtimePostgresUpdatePayload<SongRequest>) => {
-          if (payload.new.session_id !== sessionId) {
-            return;
-          }
-
           setRequests((current) => upsertRequest(current, payload.new));
         },
       )
@@ -164,7 +155,7 @@ export function AudienceRequestStatusList({
     return () => {
       void channel.unsubscribe();
     };
-  }, [initialRequests.length, participantId, sessionId]);
+  }, [initialRequests.length, participantId]);
 
   const visibleRequests = requests.filter((request) =>
     VISIBLE_STATUSES.includes(request.status),

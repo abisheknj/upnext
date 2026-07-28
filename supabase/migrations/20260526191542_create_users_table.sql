@@ -15,7 +15,11 @@ create table users (
 
   email text not null unique,
 
+  public_join_id varchar not null unique default generate_public_join_id(),
+
   created_at timestamptz not null default now(),
 
   updated_at timestamptz not null default now()
 );
+
+create index users_public_join_id_idx on users (public_join_id);

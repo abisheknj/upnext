@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 
 import { createParticipant } from "@/services/participants";
+import { getParticipantById } from "@/services/participants";
 import { createSongRequest } from "@/services/requests";
-import { getSessionById } from "@/services/sessions";
+import { getActiveSessionByPublicJoinId } from "@/services/sessions";
 
 import {
   type JoinActionState,
@@ -18,17 +19,17 @@ function generateGuestNickname(): string {
 }
 
 export async function joinSessionAction(
-  sessionId: string,
+  publicJoinId: string,
 ): Promise<JoinActionState> {
-  const session = await getSessionById(sessionId);
+  const session = await getActiveSessionByPublicJoinId(publicJoinId);
 
   if (!session) {
-    return { error: "Session not found." };
+    return { error: "DJ is not live right now." };
   }
 
   try {
     const participant = await createParticipant({
-      sessionId,
+      sessionId: session.id,
       nickname: generateGuestNickname(),
     });
 
@@ -50,7 +51,7 @@ export async function submitSongRequestAction(
   }
 
   const {
-    sessionId,
+    publicJoinId,
     participantId,
     songId,
     songTitle,
@@ -59,16 +60,21 @@ export async function submitSongRequestAction(
     message,
   } = parsed.data;
 
-  const session = await getSessionById(sessionId);
+  const session = await getActiveSessionByPublicJoinId(publicJoinId);
   if (!session) {
-    return { error: "Session not found." };
+    return { error: "DJ is not live right now." };
+  }
+
+  const participant = await getParticipantById(participantId);
+  if (!participant || participant.session_id !== session.id) {
+    return { error: "Please join this live session again." };
   }
 
   let request;
 
   try {
     request = await createSongRequest({
-      sessionId,
+      sessionId: session.id,
       participantId,
       songTitle,
       artistName,
@@ -88,5 +94,5 @@ export async function submitSongRequestAction(
     requestId: request.id,
   });
 
-  redirect(`/join/${sessionId}/success?${params.toString()}`);
+  redirect(`/join/${publicJoinId}/success?${params.toString()}`);
 }

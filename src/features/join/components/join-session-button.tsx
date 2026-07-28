@@ -9,10 +9,10 @@ import { joinSessionAction } from "../actions";
 import { setStoredParticipantId } from "../lib/participant-storage";
 
 type JoinSessionButtonProps = {
-  sessionId: string;
+  publicJoinId: string;
 };
 
-export function JoinSessionButton({ sessionId }: JoinSessionButtonProps) {
+export function JoinSessionButton({ publicJoinId }: JoinSessionButtonProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -21,15 +21,15 @@ export function JoinSessionButton({ sessionId }: JoinSessionButtonProps) {
     setError(null);
 
     startTransition(async () => {
-      const result = await joinSessionAction(sessionId);
+      const result = await joinSessionAction(publicJoinId);
 
       if (result.error || !result.participantId) {
         setError(result.error ?? "Could not join session.");
         return;
       }
 
-      setStoredParticipantId(sessionId, result.participantId);
-      router.push(`/join/${sessionId}/request`);
+      setStoredParticipantId(publicJoinId, result.participantId);
+      router.push(`/join/${publicJoinId}/request`);
     });
   }
 
