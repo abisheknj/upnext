@@ -10,16 +10,12 @@ export type UserProfile = {
   role: UserRole;
   display_name: string;
   email: string;
+  public_join_id: string | null;
   created_at: string;
   updated_at: string;
 };
 
-export type SessionStatus =
-  | "draft"
-  | "scheduled"
-  | "live"
-  | "paused"
-  | "ended";
+export type SessionStatus = "draft" | "scheduled" | "live" | "paused" | "ended";
 
 export type RequestStatus =
   | "submitted"

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CreditCard,
   Headphones,
+  IdCard,
   LayoutDashboard,
   ListMusic,
   MapPin,
@@ -49,6 +50,7 @@ export function DashboardShell({
     { label: "Leaderboard", href: "/dashboard", icon: Trophy },
     { label: "Analytics", href: "/dashboard", icon: BarChart3 },
     { label: "Payments", href: "/dashboard", icon: CreditCard },
+    { label: "Profile", href: "/dashboard/profile", icon: IdCard },
   ];
 
   return (
@@ -89,11 +91,11 @@ export function DashboardShell({
           <div className="mt-auto space-y-5">
             <div className="space-y-2 border-t border-white/10 pt-5">
               <Link
-                href="/dashboard"
+                href="/dashboard/profile"
                 className="text-muted-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground flex items-center gap-4 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
               >
                 <Settings className="size-5" aria-hidden="true" />
-                Settings
+                Profile
               </Link>
               <Link
                 href="/dashboard"

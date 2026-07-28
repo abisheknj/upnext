@@ -21,11 +21,14 @@ const initialState: SongRequestActionState = {};
 const MIN_SEARCH_QUERY_LENGTH = 2;
 
 type SongRequestFormProps = {
-  sessionId: string;
+  publicJoinId: string;
   isLive: boolean;
 };
 
-export function SongRequestForm({ sessionId, isLive }: SongRequestFormProps) {
+export function SongRequestForm({
+  publicJoinId,
+  isLive,
+}: SongRequestFormProps) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     submitSongRequestAction,
@@ -38,14 +41,14 @@ export function SongRequestForm({ sessionId, isLive }: SongRequestFormProps) {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isResultsOpen, setIsResultsOpen] = useState(false);
   const [participantId] = useState<string | null>(() =>
-    getStoredParticipantId(sessionId),
+    getStoredParticipantId(publicJoinId),
   );
 
   useEffect(() => {
     if (!participantId) {
-      router.replace(`/join/${sessionId}`);
+      router.replace(`/join/${publicJoinId}`);
     }
-  }, [participantId, sessionId, router]);
+  }, [participantId, publicJoinId, router]);
 
   useEffect(() => {
     const query = search.trim();
@@ -111,7 +114,7 @@ export function SongRequestForm({ sessionId, isLive }: SongRequestFormProps) {
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
-      <input type="hidden" name="sessionId" value={sessionId} />
+      <input type="hidden" name="publicJoinId" value={publicJoinId} />
       <input type="hidden" name="participantId" value={participantId} />
       <input type="hidden" name="songId" value={selectedTrack?.id ?? ""} />
       <input

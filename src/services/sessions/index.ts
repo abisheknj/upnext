@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Session, SessionStatus } from "@/lib/types/database";
+import { getUserByPublicJoinId } from "@/services/users";
 
 export type CreateSessionInput = {
   title: string;
@@ -86,6 +87,39 @@ export async function getActiveSessionByDj(
   }
 
   return data as Session | null;
+}
+
+export async function getLiveSessionByDj(
+  djUserId: string,
+): Promise<Session | null> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select()
+    .eq("created_by", djUserId)
+    .eq("status", "live")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Session | null;
+}
+
+export async function getActiveSessionByPublicJoinId(
+  publicJoinId: string,
+): Promise<Session | null> {
+  const user = await getUserByPublicJoinId(publicJoinId);
+
+  if (!user) {
+    return null;
+  }
+
+  return getLiveSessionByDj(user.id);
 }
 
 export async function listSessionsByDj(djUserId: string): Promise<Session[]> {

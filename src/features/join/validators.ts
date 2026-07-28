@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const joinSessionSchema = z.object({
-  sessionId: z.uuid("Invalid session"),
+  publicJoinId: z.string().regex(/^bt_[A-Z2-9]{6}$/, "Invalid join link"),
 });
 
 export const songRequestSchema = z.object({
-  sessionId: z.uuid("Invalid session"),
+  publicJoinId: z.string().regex(/^bt_[A-Z2-9]{6}$/, "Invalid join link"),
   participantId: z.uuid("Invalid participant"),
   songId: z.string().trim().min(1, "Select a valid song").max(128),
   songTitle: z.string().trim().min(1, "Select a valid song").max(300),
@@ -60,7 +60,7 @@ export function parseSongRequestFormData(
   | { success: true; data: SongRequestInput }
   | { success: false; state: SongRequestActionState } {
   const result = songRequestSchema.safeParse({
-    sessionId: formData.get("sessionId"),
+    publicJoinId: formData.get("publicJoinId"),
     participantId: formData.get("participantId"),
     songId: formData.get("songId"),
     songTitle: formData.get("songTitle"),
