@@ -1,5 +1,3 @@
-create extension if not exists "pgcrypto";
-
 create or replace function generate_public_join_id()
 returns varchar
 language plpgsql
@@ -30,3 +28,19 @@ begin
   return generated;
 end;
 $$;
+
+alter table users
+add column public_join_id varchar;
+
+update users
+set public_join_id = generate_public_join_id()
+where public_join_id is null;
+
+alter table users
+alter column public_join_id set not null,
+alter column public_join_id set default generate_public_join_id();
+
+alter table users
+add constraint users_public_join_id_key unique (public_join_id);
+
+create index users_public_join_id_idx on users (public_join_id);
